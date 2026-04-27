@@ -245,7 +245,7 @@ tr:hover td{background:var(--gray50);color:var(--gray900)}
         <div class="chart-header">
           <div>
             <div class="chart-title">월별 GSV</div>
-            <div class="chart-sub">단위: 백만원 (KRW M)</div>
+            <div class="chart-sub">단위: 원 (KRW)</div>
           </div>
         </div>
         <div class="chart-wrap"><canvas id="p1BarChart"></canvas></div>
@@ -316,7 +316,7 @@ tr:hover td{background:var(--gray50);color:var(--gray900)}
         <div class="chart-header">
           <div>
             <div class="chart-title">채널별 GSV 트렌드</div>
-            <div class="chart-sub">단위: 백만원 (KRW M)</div>
+            <div class="chart-sub">단위: 원 (KRW)</div>
           </div>
         </div>
         <div class="chart-wrap"><canvas id="p2LineChart"></canvas></div>
@@ -497,8 +497,8 @@ function renderPage1(){
   const datasets = activeChannels.map(c=>{
     const cm=DATA.ch_month[c]||{};
     const d=MONTHS.map(ym=>{
-      if(cust){const cc=DATA.ch_cust_month[c]?.[cust]; return Math.round((cc?.[ym]?.gsv||0)/1e6);}
-      return Math.round((cm[ym]?.gsv||0)/1e6);
+      if(cust){const cc=DATA.ch_cust_month[c]?.[cust]; return Math.round(cc?.[ym]?.gsv||0);}
+      return Math.round(cm[ym]?.gsv||0);
     });
     if(!d.some(v=>v>0)) return null;
     return {label:c,data:d,backgroundColor:CH_COLORS[c]||'#888',borderRadius:6,borderSkipped:false};
@@ -513,7 +513,7 @@ function renderPage1(){
       plugins:{legend:{labels:{color:'#6B7280',font:{size:11},padding:12}}},
       scales:{
         x:{ticks:{color:'#9AA3B2',font:{size:11}},grid:{display:false}},
-        y:{ticks:{color:'#9AA3B2',font:{size:11},callback:v=>v+'M'},grid:{color:'#EEF0F5',drawBorder:false}}
+        y:{ticks:{color:'#9AA3B2',font:{size:11},callback:v=>Number(v).toLocaleString('ko-KR')+'원'},grid:{color:'#EEF0F5',drawBorder:false}}
       }
     }
   });
@@ -623,7 +623,7 @@ function renderPage2(){
     type:'line',
     data:{labels:MONTH_LABELS,datasets:activeChannels.map(c=>({
       label:c,
-      data:MONTHS.map(ym=>Math.round((DATA.ch_month[c]?.[ym]?.gsv||0)/1e6)),
+      data:MONTHS.map(ym=>Math.round(DATA.ch_month[c]?.[ym]?.gsv||0)),
       borderColor:CH_COLORS[c]||'#888',backgroundColor:(CH_COLORS[c]||'#888')+'18',
       tension:.4,fill:true,pointRadius:5,pointBackgroundColor:CH_COLORS[c]||'#888',borderWidth:2
     })).filter(d=>d.data.some(v=>v>0))},
@@ -632,7 +632,7 @@ function renderPage2(){
       plugins:{legend:{labels:{color:'#6B7280',font:{size:10},padding:10}}},
       scales:{
         x:{ticks:{color:'#9AA3B2',font:{size:11}},grid:{display:false}},
-        y:{ticks:{color:'#9AA3B2',font:{size:11},callback:v=>v+'M'},grid:{color:'#EEF0F5',drawBorder:false}}
+        y:{ticks:{color:'#9AA3B2',font:{size:11},callback:v=>Number(v).toLocaleString('ko-KR')+'원'},grid:{color:'#EEF0F5',drawBorder:false}}
       }
     }
   });
@@ -735,12 +735,8 @@ function sortTable(tableId, colIdx){
 }
 
 function fmtN(n){return Math.round(n).toLocaleString('ko-KR')}
-function fmtM(n){return (n/1e6).toFixed(1)+'M'}
-function fmtB(n){
-  if(n>=1e9) return (n/1e9).toFixed(2)+'B';
-  if(n>=1e6) return (n/1e6).toFixed(1)+'M';
-  return fmtN(n);
-}
+function fmtM(n){return Math.round(n).toLocaleString('ko-KR')+'원'}
+function fmtB(n){return Math.round(n).toLocaleString('ko-KR')+'원'}
 
 loadData();
 </script>
