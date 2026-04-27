@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KraftHeinz Korea · Sales Dashboard 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --red:#C8102E;--red-light:#FEE9EC;--red-mid:#F5A0AD;
+  --bg:#F4F6FA;--white:#FFFFFF;
+  --gray50:#F8F9FB;--gray100:#EEF0F5;--gray200:#DDE1EA;--gray300:#BFC5D2;
+  --gray400:#9AA3B2;--gray500:#6B7280;--gray600:#4B5563;--gray700:#374151;--gray900:#111827;
+  --green:#16A34A;--green-light:#DCFCE7;
+  --blue:#3B82F6;--blue-light:#EFF6FF;
+  --yellow:#D97706;--yellow-light:#FEF3C7;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow:0 4px 16px rgba(0,0,0,.07),0 1px 4px rgba(0,0,0,.04);
+  --shadow-lg:0 10px 40px rgba(0,0,0,.1),0 2px 8px rgba(0,0,0,.05);
+  --radius:16px;--radius-sm:10px;--radius-xs:6px;
+}
+body{font-family:'Inter','Noto Sans KR',sans-serif;background:var(--bg);color:var(--gray900);min-height:100vh;font-size:14px}
+
+/* SIDEBAR */
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:64px;background:var(--white);box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;padding:16px 0;z-index:200;gap:4px}
+.sidebar-logo{width:36px;height:36px;background:var(--red);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;letter-spacing:-1px;margin-bottom:20px;font-family:'Inter',sans-serif}
+.sib-btn{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray400);font-size:18px;transition:.2s;border:none;background:transparent}
+.sib-btn:hover{background:var(--gray100);color:var(--gray700)}
+.sib-btn.active{background:var(--red-light);color:var(--red)}
+.sidebar-spacer{flex:1}
+.sidebar-avatar{width:32px;height:32px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;font-weight:700}
+
+/* MAIN LAYOUT */
+.layout{margin-left:64px;min-height:100vh;display:flex;flex-direction:column}
+
+/* TOP BAR */
+.topbar{background:var(--white);box-shadow:var(--shadow-sm);padding:0 28px;height:64px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-name{font-size:17px;font-weight:700;color:var(--gray900);letter-spacing:-.3px}
+.brand-tag{font-size:11px;color:var(--gray400);font-weight:400}
+.taeguk{font-size:20px}
+
+/* PILL TABS */
+.tab-bar{display:flex;gap:4px;margin-left:32px;background:var(--gray100);padding:4px;border-radius:12px}
+.tab-pill{padding:7px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--gray500);transition:.2s;white-space:nowrap;border:none;background:transparent;font-family:inherit}
+.tab-pill:hover{color:var(--gray700)}
+.tab-pill.active{background:var(--gray900);color:#fff;box-shadow:var(--shadow-sm)}
+
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.chip{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1.5px solid var(--gray200);color:var(--gray500);background:var(--white)}
+.chip.red{border-color:var(--red-mid);color:var(--red);background:var(--red-light)}
+
+/* CONTENT */
+.content{padding:28px;flex:1}
+
+/* FILTERS */
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;align-items:center}
+.filter-group{display:flex;align-items:center;gap:6px}
+.filter-label{font-size:12px;color:var(--gray500);font-weight:500;white-space:nowrap}
+select,input[type=text]{background:var(--white);border:1.5px solid var(--gray200);color:var(--gray700);padding:8px 14px;border-radius:var(--radius-sm);font-size:13px;font-family:inherit;outline:none;cursor:pointer;transition:.2s;box-shadow:var(--shadow-sm)}
+select:focus,input[type=text]:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-light)}
+.btn-reset{padding:8px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--gray200);background:var(--white);color:var(--gray500);font-family:inherit;transition:.2s}
+.btn-reset:hover{border-color:var(--red);color:var(--red)}
+
+/* KPI CARDS */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 24px;position:relative;overflow:hidden;transition:.2s}
+.kpi-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px)}
+.kpi-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:14px}
+.kpi-icon.red{background:var(--red-light)}
+.kpi-icon.green{background:var(--green-light)}
+.kpi-icon.blue{background:var(--blue-light)}
+.kpi-icon.yellow{background:var(--yellow-light)}
+.kpi-label{font-size:12px;color:var(--gray400);font-weight:500;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.kpi-value{font-size:28px;font-weight:800;color:var(--gray900);letter-spacing:-1px;line-height:1;margin-bottom:8px;font-family:'Inter',sans-serif}
+.kpi-badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.kpi-badge.up{background:var(--green-light);color:var(--green)}
+.kpi-badge.down{background:var(--red-light);color:var(--red)}
+.kpi-badge.neutral{background:var(--gray100);color:var(--gray500)}
+
+/* CHARTS ROW */
+.charts-row{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-bottom:24px}
+.chart-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 24px}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.chart-title{font-size:15px;font-weight:700;color:var(--gray900)}
+.chart-sub{font-size:12px;color:var(--gray400);margin-top:2px}
+.chart-wrap{position:relative;height:240px}
+
+/* TABLE CARD */
+.table-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:24px}
+.table-topbar{padding:18px 24px;display:flex;align-items:center;gap:12px;border-bottom:1.5px solid var(--gray100)}
+.table-title{font-size:15px;font-weight:700;color:var(--gray900)}
+.table-count{font-size:12px;color:var(--gray400);background:var(--gray100);padding:3px 10px;border-radius:20px;margin-left:auto}
+.table-wrap{overflow-x:auto;max-height:440px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th{background:var(--gray50);padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--gray400);text-transform:uppercase;letter-spacing:.6px;position:sticky;top:0;cursor:pointer;user-select:none;white-space:nowrap;border-bottom:1.5px solid var(--gray100)}
+th:hover{color:var(--gray700)}
+th.sort-asc::after{content:' ↑';color:var(--red)}
+th.sort-desc::after{content:' ↓';color:var(--red)}
+td{padding:11px 16px;border-bottom:1px solid var(--gray100);font-size:13px;color:var(--gray600)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--gray50);color:var(--gray900)}
+.prod-name{max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--gray900);font-weight:500}
+.num{text-align:right;font-variant-numeric:tabular-nums;font-family:'Inter',monospace;font-size:13px}
+.gsv-tag{background:var(--red-light);color:var(--red);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;display:inline-block}
+
+/* PAGE 2 */
+.p2-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:16px;margin-bottom:24px}
+.up{color:var(--green);font-weight:600}
+.down{color:var(--red);font-weight:600}
+.neutral-txt{color:var(--gray400)}
+.expand-row{cursor:pointer}
+.expand-row:hover td{background:var(--gray50)!important}
+.drill-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:24px;border-left:4px solid var(--red)}
+
+/* PAGE 3 */
+.drop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:28px}
+.drop-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;transition:.2s}
+.drop-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.drop-rank-badge{display:inline-flex;align-items:center;gap:6px;background:var(--red-light);color:var(--red);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-bottom:12px}
+.drop-name{font-size:14px;font-weight:700;color:var(--gray900);margin-bottom:14px;line-height:1.4}
+.drop-stat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.drop-stat{background:var(--gray50);border-radius:var(--radius-sm);padding:12px;border:1.5px solid var(--gray100)}
+.drop-stat-label{font-size:10px;color:var(--gray400);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.drop-stat-val{font-size:20px;font-weight:800;color:var(--gray900);font-family:'Inter',sans-serif;letter-spacing:-.5px}
+.drop-stat-val.red{color:var(--red)}
+.drop-pct-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.drop-pct-num{font-size:26px;font-weight:800;color:var(--red);font-family:'Inter',sans-serif;letter-spacing:-1px}
+.drop-bar-bg{flex:1;height:6px;background:var(--gray100);border-radius:3px;overflow:hidden}
+.drop-bar-fill{height:100%;background:linear-gradient(90deg,var(--red),#FF6B8A);border-radius:3px}
+.drop-comment{background:var(--gray50);border-radius:var(--radius-sm);padding:12px 14px;font-size:12px;color:var(--gray600);line-height:1.6;border-left:3px solid var(--yellow)}
+
+/* PAGE HIDDEN */
+.page{display:none}
+.page.active{display:block}
+
+/* LOADING */
+.loading{text-align:center;padding:80px;color:var(--gray400)}
+.spinner{display:inline-block;width:28px;height:28px;border:3px solid var(--gray200);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* DIVIDER */
+.section-label{font-size:11px;font-weight:700;color:var(--gray400);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;margin-top:4px}
+
+/* RESPONSIVE */
+@media(max-width:1200px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .charts-row{grid-template-columns:1fr}
+  .p2-grid{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .sidebar{width:0;overflow:hidden}
+  .layout{margin-left:0}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .tab-bar{gap:2px}
+  .tab-pill{padding:6px 12px;font-size:12px}
+  .content{padding:16px}
+  .topbar{padding:0 16px}
+  .drop-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .kpi-grid{grid-template-columns:1fr}
+  .brand-name{font-size:14px}
+  .tab-bar{display:none}
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--gray50)}
+::-webkit-scrollbar-thumb{background:var(--gray200);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--gray300)}
+
+/* MOBILE TAB NAV */
+.mobile-tabs{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--white);box-shadow:0 -2px 12px rgba(0,0,0,.08);padding:8px 0 env(safe-area-inset-bottom,8px);z-index:300}
+.mobile-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--gray400);cursor:pointer;padding:4px 0}
+.mobile-tab.active{color:var(--red)}
+@media(max-width:480px){
+  .mobile-tabs{display:flex}
+  .layout{padding-bottom:64px}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">KH</div>
+  <button class="sib-btn active" title="Dashboard" onclick="switchTab(0)">📊</button>
+  <button class="sib-btn" title="Growth" onclick="switchTab(1)">📈</button>
+  <button class="sib-btn" title="Alerts" onclick="switchTab(2)">🚨</button>
+  <div class="sidebar-spacer"></div>
+  <div class="sidebar-avatar">KH</div>
+</aside>
+
+<!-- MAIN -->
+<div class="layout">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="taeguk">🍅</span>
+      <div>
+        <div class="brand-name">KraftHeinz Korea</div>
+        <div class="brand-tag">Sales Dashboard 2026</div>
+      </div>
+    </div>
+    <div class="tab-bar">
+      <button class="tab-pill active" onclick="switchTab(0)">📊 Channel Overview</button>
+      <button class="tab-pill" onclick="switchTab(1)">📈 Growth Analysis</button>
+      <button class="tab-pill" onclick="switchTab(2)">🚨 Drop Alert</button>
+    </div>
+    <div class="topbar-right">
+      <span class="chip red">Jan – Apr 2026</span>
+      <span class="chip">YTD</span>
+    </div>
+  </header>
+
+  <!-- LOADING -->
+  <div id="loadingEl" style="padding:80px;text-align:center;color:var(--gray400)">
+    <div class="spinner"></div>
+    <div style="font-size:14px;margin-top:8px">데이터 로딩 중...</div>
+  </div>
+
+  <!-- PAGE 1 -->
+  <div id="page0" class="page content" style="display:none">
+    <div class="filters">
+      <div class="filter-group">
+        <span class="filter-label">Channel</span>
+        <select id="p1Channel" onchange="p1ChannelChange()"><option value="">전체 채널</option></select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Customer</span>
+        <select id="p1Customer" onchange="renderPage1()"><option value="">전체 고객</option></select>
+      </div>
+      <input type="text" id="p1Search" placeholder="🔍 제품명 검색..." oninput="renderPage1()">
+      <button class="btn-reset" onclick="resetFilters()">✕ 초기화</button>
+    </div>
+
+    <div class="kpi-grid" id="p1Kpi"></div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">월별 GSV</div>
+            <div class="chart-sub">단위: 백만원 (KRW M)</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="p1BarChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">채널 비중</div>
+            <div class="chart-sub">YTD GSV 기준</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="p1DonutChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-topbar">
+        <span class="table-title">제품별 판매 현황</span>
+        <span class="table-count" id="p1RowCount">—</span>
+      </div>
+      <div class="table-wrap">
+        <table id="p1Table">
+          <thead><tr>
+            <th onclick="sortTable('p1',0)">제품명</th>
+            <th onclick="sortTable('p1',1)" class="num">1월</th>
+            <th onclick="sortTable('p1',2)" class="num">2월</th>
+            <th onclick="sortTable('p1',3)" class="num">3월</th>
+            <th onclick="sortTable('p1',4)" class="num">4월</th>
+            <th onclick="sortTable('p1',5)" class="num">합계 수량</th>
+            <th onclick="sortTable('p1',6)" class="num">단가</th>
+            <th onclick="sortTable('p1',7)" class="num">합계 GSV</th>
+          </tr></thead>
+          <tbody id="p1Tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 2 -->
+  <div id="page1" class="page content" style="display:none">
+    <div class="filters">
+      <div class="filter-group">
+        <span class="filter-label">채널</span>
+        <select id="p2Channel" onchange="renderPage2()"><option value="">전체 채널</option></select>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">비교 기준</span>
+        <select id="p2Period" onchange="renderPage2()">
+          <option value="mom">전월 대비 (MoM)</option>
+          <option value="q">분기별 (QoQ)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="p2-grid">
+      <div class="table-card" style="margin-bottom:0">
+        <div class="table-topbar">
+          <span class="table-title" id="p2TableTitle">채널별 전월 대비 성장률</span>
+        </div>
+        <div class="table-wrap">
+          <table id="p2Table" style="min-width:auto">
+            <thead id="p2GrowthHead"></thead>
+            <tbody id="p2GrowthBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="chart-card" style="margin-bottom:0">
+        <div class="chart-header">
+          <div>
+            <div class="chart-title">채널별 GSV 트렌드</div>
+            <div class="chart-sub">단위: 백만원 (KRW M)</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="p2LineChart"></canvas></div>
+      </div>
+    </div>
+
+    <div id="p2DrillDown" style="display:none;margin-top:16px">
+      <div class="drill-card">
+        <div class="table-topbar">
+          <span class="table-title" id="p2DrillTitle">하락 채널 상세 — 제품별 TOP5</span>
+          <button class="btn-reset" style="margin-left:auto" onclick="document.getElementById('p2DrillDown').style.display='none'">✕ 닫기</button>
+        </div>
+        <div class="table-wrap">
+          <table style="min-width:auto">
+            <thead><tr>
+              <th>제품명</th>
+              <th class="num">3월 수량</th>
+              <th class="num">4월 수량</th>
+              <th class="num">변화량</th>
+              <th class="num">변화율</th>
+            </tr></thead>
+            <tbody id="p2DrillBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 3 -->
+  <div id="page2" class="page content" style="display:none">
+    <div style="margin-bottom:22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--gray900);letter-spacing:-.3px">판매량 급감 TOP 10</div>
+        <div style="font-size:13px;color:var(--gray400);margin-top:3px">2026년 3월 → 4월 · 최소 100박스 이상 판매 제품 기준</div>
+      </div>
+      <span class="chip red" style="margin-left:auto">⚠️ Alert</span>
+    </div>
+    <div class="drop-grid" id="p3Grid"></div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">3월 vs 4월 판매량 비교</div>
+          <div class="chart-sub">급감 TOP10 제품 기준</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:300px"><canvas id="p3BarChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE BOTTOM TABS -->
+<nav class="mobile-tabs">
+  <div class="mobile-tab active" onclick="switchTab(0)"><span>📊</span>Overview</div>
+  <div class="mobile-tab" onclick="switchTab(1)"><span>📈</span>Growth</div>
+  <div class="mobile-tab" onclick="switchTab(2)"><span>🚨</span>Alerts</div>
+</nav>
+
+<script>
+let DATA = null;
+let charts = {};
+
+const MONTHS = ['2026-01','2026-02','2026-03','2026-04'];
+const MONTH_LABELS = ['1월','2월','3월','4월'];
+
+const CH_COLORS = {
+  'BGF':'#3B82F6','COSTCO':'#8B5CF6','E-MART':'#10B981',
+  'GS':'#F59E0B','HOMEPLUS':'#EF4444','Key Account':'#C8102E',
+  'LOTTE':'#F97316','Megamart':'#14B8A6','ONLINE':'#6366F1',
+  'RT Others':'#84CC16','SPC':'#EC4899','Wholesaler':'#64748B'
+};
+
+Chart.defaults.font.family = "'Inter','Noto Sans KR',sans-serif";
+
+async function loadData(){
+  try{
+    const res = await fetch('./dashboard_data.json');
+    DATA = await res.json();
+    init();
+  }catch(e){
+    document.getElementById('loadingEl').innerHTML=`<div style="color:var(--red);padding:40px">데이터 로드 실패: ${e.message}</div>`;
+  }
+}
+
+function init(){
+  document.getElementById('loadingEl').style.display='none';
+  ['p1Channel'].forEach(id=>{
+    const sel = document.getElementById(id);
+    DATA.channels.forEach(ch=>{
+      sel.appendChild(Object.assign(document.createElement('option'),{value:ch,textContent:ch}));
+    });
+  });
+  renderPage1(); renderPage2(); renderPage3();
+  document.getElementById('page0').style.display='block';
+}
+
+function switchTab(idx){
+  document.querySelectorAll('.tab-pill').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.querySelectorAll('.sib-btn').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  document.querySelectorAll('.mobile-tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  ['page0','page1','page2'].forEach((id,i)=>{
+    document.getElementById(id).style.display=(i===idx)?'block':'none';
+  });
+}
+
+function p1ChannelChange(){
+  const ch = document.getElementById('p1Channel').value;
+  const custSel = document.getElementById('p1Customer');
+  custSel.innerHTML='<option value="">전체 고객</option>';
+  if(ch && DATA.ch_customers[ch]){
+    DATA.ch_customers[ch].forEach(c=>custSel.appendChild(Object.assign(document.createElement('option'),{value:c,textContent:c})));
+  }
+  renderPage1();
+}
+
+function resetFilters(){
+  document.getElementById('p1Channel').value='';
+  document.getElementById('p1Customer').innerHTML='<option value="">전체 고객</option>';
+  document.getElementById('p1Search').value='';
+  renderPage1();
+}
+
+function renderPage1(){
+  if(!DATA) return;
+  const ch = document.getElementById('p1Channel').value;
+  const cust = document.getElementById('p1Customer').value;
+  const search = document.getElementById('p1Search').value.toLowerCase();
+  const activeChannels = ch?[ch]:DATA.channels;
+
+  // KPI
+  let totalGsv=0, totalQty=0, custSet=new Set(), chSet=new Set();
+  activeChannels.forEach(c=>{
+    const cm = DATA.ch_month[c]; if(!cm) return;
+    chSet.add(c);
+    if(DATA.ch_customers[c]) DATA.ch_customers[c].forEach(cu=>custSet.add(cu));
+    if(!cust){
+      MONTHS.forEach(ym=>{totalGsv+=cm[ym]?.gsv||0; totalQty+=cm[ym]?.qty||0;});
+    }
+  });
+  if(cust){
+    activeChannels.forEach(c=>{
+      const cc=DATA.ch_cust_month[c]?.[cust]; if(!cc) return;
+      MONTHS.forEach(ym=>{totalGsv+=cc[ym]?.gsv||0; totalQty+=cc[ym]?.qty||0;});
+    });
+    custSet=new Set([cust]);
+  }
+
+  // Prev month comparison (Jan vs Feb for demo)
+  const lastM = totalGsv; // simplified
+
+  document.getElementById('p1Kpi').innerHTML=`
+    <div class="kpi-card">
+      <div class="kpi-icon red">💰</div>
+      <div class="kpi-label">총 GSV</div>
+      <div class="kpi-value">₩${fmtB(totalGsv)}</div>
+      <span class="kpi-badge neutral">YTD 2026</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon green">📦</div>
+      <div class="kpi-label">총 판매 수량</div>
+      <div class="kpi-value">${fmtN(totalQty)}</div>
+      <span class="kpi-badge neutral">박스 기준</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon blue">🏪</div>
+      <div class="kpi-label">활성 채널</div>
+      <div class="kpi-value">${chSet.size}</div>
+      <span class="kpi-badge neutral">Channels</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon yellow">👥</div>
+      <div class="kpi-label">활성 고객</div>
+      <div class="kpi-value">${fmtN(custSet.size)}</div>
+      <span class="kpi-badge neutral">Customers</span>
+    </div>
+  `;
+
+  // Bar chart
+  const datasets = activeChannels.map(c=>{
+    const cm=DATA.ch_month[c]||{};
+    const d=MONTHS.map(ym=>{
+      if(cust){const cc=DATA.ch_cust_month[c]?.[cust]; return Math.round((cc?.[ym]?.gsv||0)/1e6);}
+      return Math.round((cm[ym]?.gsv||0)/1e6);
+    });
+    if(!d.some(v=>v>0)) return null;
+    return {label:c,data:d,backgroundColor:CH_COLORS[c]||'#888',borderRadius:6,borderSkipped:false};
+  }).filter(Boolean);
+
+  if(charts.p1Bar) charts.p1Bar.destroy();
+  charts.p1Bar = new Chart(document.getElementById('p1BarChart'),{
+    type:'bar',
+    data:{labels:MONTH_LABELS,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#6B7280',font:{size:11},padding:12}}},
+      scales:{
+        x:{ticks:{color:'#9AA3B2',font:{size:11}},grid:{display:false}},
+        y:{ticks:{color:'#9AA3B2',font:{size:11},callback:v=>v+'M'},grid:{color:'#EEF0F5',drawBorder:false}}
+      }
+    }
+  });
+
+  // Donut
+  const donutChs = ch?[ch]:DATA.channels;
+  if(charts.p1Donut) charts.p1Donut.destroy();
+  charts.p1Donut = new Chart(document.getElementById('p1DonutChart'),{
+    type:'doughnut',
+    data:{
+      labels:donutChs,
+      datasets:[{
+        data:donutChs.map(c=>MONTHS.reduce((s,ym)=>s+(DATA.ch_month[c]?.[ym]?.gsv||0),0)),
+        backgroundColor:donutChs.map(c=>CH_COLORS[c]||'#888'),
+        borderWidth:0,hoverOffset:6
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{legend:{position:'right',labels:{color:'#6B7280',font:{size:10},padding:8}}}
+    }
+  });
+
+  // Table
+  const prodMap={};
+  activeChannels.forEach(c=>{
+    const pd=DATA.ch_prod_month[c]; if(!pd) return;
+    Object.entries(pd).forEach(([prod,mths])=>{
+      if(search&&!prod.toLowerCase().includes(search)) return;
+      if(!prodMap[prod]) prodMap[prod]={qtys:[0,0,0,0],gsv:0,priceSum:0,priceCnt:0};
+      MONTHS.forEach((ym,i)=>{
+        const m=mths[ym]; if(!m) return;
+        prodMap[prod].qtys[i]+=m.qty||0;
+        prodMap[prod].gsv+=m.gsv||0;
+        if(m.price_cnt>0){prodMap[prod].priceSum+=m.price||0;prodMap[prod].priceCnt+=m.price_cnt||0;}
+      });
+    });
+  });
+
+  const rows=Object.entries(prodMap)
+    .map(([prod,d])=>({prod,qtys:d.qtys,totalQty:d.qtys.reduce((a,b)=>a+b,0),totalGsv:d.gsv,avgPrice:d.priceCnt>0?Math.round(d.priceSum/d.priceCnt):0}))
+    .filter(r=>r.totalQty>0).sort((a,b)=>b.totalGsv-a.totalGsv);
+
+  document.getElementById('p1RowCount').textContent=`${rows.length.toLocaleString()}개 제품`;
+  document.getElementById('p1Tbody').innerHTML=rows.slice(0,200).map(r=>`
+    <tr>
+      <td class="prod-name" title="${r.prod}">${r.prod}</td>
+      ${r.qtys.map(q=>`<td class="num">${q>0?fmtN(q):'-'}</td>`).join('')}
+      <td class="num" style="font-weight:600;color:var(--gray900)">${fmtN(r.totalQty)}</td>
+      <td class="num">${r.avgPrice>0?'₩'+fmtN(r.avgPrice):'-'}</td>
+      <td class="num"><span class="gsv-tag">₩${fmtM(r.totalGsv)}</span></td>
+    </tr>
+  `).join('');
+}
+
+function renderPage2(){
+  if(!DATA) return;
+  const ch=document.getElementById('p2Channel').value;
+  const period=document.getElementById('p2Period').value;
+  const p2Ch=document.getElementById('p2Channel');
+  if(p2Ch.options.length<=1) DATA.channels.forEach(c=>p2Ch.appendChild(Object.assign(document.createElement('option'),{value:c,textContent:c})));
+
+  const activeChannels=ch?[ch]:DATA.channels;
+
+  if(period==='mom'){
+    document.getElementById('p2TableTitle').textContent='채널별 전월 대비 성장률 (MoM)';
+    const pairs=[['2026-01','2026-02'],['2026-02','2026-03'],['2026-03','2026-04']];
+    const pLabels=['1→2월','2→3월','3→4월'];
+    document.getElementById('p2GrowthHead').innerHTML=`<tr><th>채널</th>${pLabels.map(l=>`<th class="num">${l}</th>`).join('')}<th class="num">YTD GSV</th></tr>`;
+    const rows=activeChannels.map(c=>{
+      const cm=DATA.ch_month[c]||{};
+      const changes=pairs.map(([p,c2])=>{const pv=cm[p]?.gsv||0,cv=cm[c2]?.gsv||0;return pv?((cv-pv)/pv*100).toFixed(1):null;});
+      return {ch:c,changes,ytd:MONTHS.reduce((s,ym)=>s+(cm[ym]?.gsv||0),0)};
+    }).sort((a,b)=>b.ytd-a.ytd);
+
+    document.getElementById('p2GrowthBody').innerHTML=rows.map(r=>`
+      <tr class="expand-row" onclick="showDrill('${r.ch}')">
+        <td><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${CH_COLORS[r.ch]||'#888'};margin-right:8px"></span><strong>${r.ch}</strong></td>
+        ${r.changes.map(c=>c===null?`<td class="num neutral-txt">—</td>`:`<td class="num ${parseFloat(c)>=0?'up':'down'}">${parseFloat(c)>=0?'↑':'↓'}${Math.abs(c)}%</td>`).join('')}
+        <td class="num" style="font-weight:700">₩${fmtB(r.ytd)}</td>
+      </tr>
+    `).join('');
+  } else {
+    document.getElementById('p2TableTitle').textContent='채널별 분기별 성장 (Q1 vs 4월)';
+    document.getElementById('p2GrowthHead').innerHTML=`<tr><th>채널</th><th class="num">Q1 GSV</th><th class="num">4월 GSV</th><th class="num">Q1 수량</th><th class="num">4월 수량</th></tr>`;
+    const rows=activeChannels.map(c=>{
+      const cm=DATA.ch_month[c]||{};
+      return {
+        ch:c,
+        q1Gsv:['2026-01','2026-02','2026-03'].reduce((s,ym)=>s+(cm[ym]?.gsv||0),0),
+        q1Qty:['2026-01','2026-02','2026-03'].reduce((s,ym)=>s+(cm[ym]?.qty||0),0),
+        aprGsv:cm['2026-04']?.gsv||0, aprQty:cm['2026-04']?.qty||0
+      };
+    }).sort((a,b)=>b.q1Gsv-a.q1Gsv);
+    document.getElementById('p2GrowthBody').innerHTML=rows.map(r=>`
+      <tr class="expand-row" onclick="showDrill('${r.ch}')">
+        <td><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${CH_COLORS[r.ch]||'#888'};margin-right:8px"></span><strong>${r.ch}</strong></td>
+        <td class="num">₩${fmtB(r.q1Gsv)}</td><td class="num">₩${fmtB(r.aprGsv)}</td>
+        <td class="num">${fmtN(r.q1Qty)}</td><td class="num">${fmtN(r.aprQty)}</td>
+      </tr>
+    `).join('');
+  }
+
+  // Line chart
+  if(charts.p2Line) charts.p2Line.destroy();
+  charts.p2Line = new Chart(document.getElementById('p2LineChart'),{
+    type:'line',
+    data:{labels:MONTH_LABELS,datasets:activeChannels.map(c=>({
+      label:c,
+      data:MONTHS.map(ym=>Math.round((DATA.ch_month[c]?.[ym]?.gsv||0)/1e6)),
+      borderColor:CH_COLORS[c]||'#888',backgroundColor:(CH_COLORS[c]||'#888')+'18',
+      tension:.4,fill:true,pointRadius:5,pointBackgroundColor:CH_COLORS[c]||'#888',borderWidth:2
+    })).filter(d=>d.data.some(v=>v>0))},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#6B7280',font:{size:10},padding:10}}},
+      scales:{
+        x:{ticks:{color:'#9AA3B2',font:{size:11}},grid:{display:false}},
+        y:{ticks:{color:'#9AA3B2',font:{size:11},callback:v=>v+'M'},grid:{color:'#EEF0F5',drawBorder:false}}
+      }
+    }
+  });
+}
+
+function showDrill(ch){
+  document.getElementById('p2DrillDown').style.display='block';
+  document.getElementById('p2DrillTitle').textContent=`[${ch}] 3→4월 하락 품목 TOP5`;
+  const pd=DATA.ch_prod_month[ch]||{};
+  const drops=Object.entries(pd).map(([prod,mths])=>{
+    const m3=mths['2026-03']?.qty||0, m4=mths['2026-04']?.qty||0;
+    return {prod,m3,m4,change:m4-m3,pct:m3>0?((m4-m3)/m3*100).toFixed(1):null};
+  }).filter(r=>r.change<0&&r.m3>10).sort((a,b)=>a.change-b.change).slice(0,5);
+  document.getElementById('p2DrillBody').innerHTML=drops.map(r=>`
+    <tr><td class="prod-name" title="${r.prod}">${r.prod}</td>
+    <td class="num">${fmtN(r.m3)}</td><td class="num">${fmtN(r.m4)}</td>
+    <td class="num down">▼ ${fmtN(Math.abs(r.change))}</td>
+    <td class="num down">${r.pct}%</td></tr>
+  `).join('');
+  document.getElementById('p2DrillDown').scrollIntoView({behavior:'smooth'});
+}
+
+const COMMENTS = (pct)=>{
+  const n=Math.abs(pct);
+  if(n>=100) return '4월 발주 없음 · 입점 중단 또는 시즌 오프 가능성 높음. 채널 담당자 확인 권장.';
+  if(n>=90) return '4월 발주 급감 · 채널 행사 종료 또는 과잉 재고 소진 단계 추정.';
+  if(n>=80) return '프로모션 종료 후 자연 감소 구간 · 정기 발주 주기 및 진열 여부 점검 필요.';
+  if(n>=70) return '전월 대비 큰 폭 하락 · 경쟁 SKU 전환 또는 판매 정책 변경 검토 권장.';
+  if(n>=60) return '시즌 수요 감소 추정 · 리오더 시기 및 채널 커버리지 점검 필요.';
+  return '소비자 수요 둔화 신호 · 가격 경쟁력 및 진열 위치 점검 권장.';
+};
+
+function renderPage3(){
+  if(!DATA) return;
+  const drops=DATA.top10_drop;
+  document.getElementById('p3Grid').innerHTML=drops.map((d,i)=>`
+    <div class="drop-card">
+      <div class="drop-rank-badge">🚨 #${i+1} 급감</div>
+      <div class="drop-name">${d.product}</div>
+      <div class="drop-stat-row">
+        <div class="drop-stat">
+          <div class="drop-stat-label">3월 판매량</div>
+          <div class="drop-stat-val">${fmtN(d.m3_qty)}<small style="font-size:11px;font-weight:400;color:var(--gray400)"> bx</small></div>
+        </div>
+        <div class="drop-stat">
+          <div class="drop-stat-label">4월 판매량</div>
+          <div class="drop-stat-val red">${fmtN(d.m4_qty)}<small style="font-size:11px;font-weight:400;color:var(--gray400)"> bx</small></div>
+        </div>
+      </div>
+      <div class="drop-pct-row">
+        <div class="drop-pct-num">${d.pct}%</div>
+        <div class="drop-bar-bg"><div class="drop-bar-fill" style="width:${Math.min(100,Math.abs(d.pct))}%"></div></div>
+      </div>
+      <div class="drop-comment">💬 ${COMMENTS(d.pct)}</div>
+    </div>
+  `).join('');
+
+  if(charts.p3Bar) charts.p3Bar.destroy();
+  charts.p3Bar = new Chart(document.getElementById('p3BarChart'),{
+    type:'bar',
+    data:{
+      labels:drops.map(d=>d.product.length>22?d.product.substring(0,22)+'…':d.product),
+      datasets:[
+        {label:'3월',data:drops.map(d=>d.m3_qty),backgroundColor:'#3B82F6',borderRadius:6,borderSkipped:false},
+        {label:'4월',data:drops.map(d=>d.m4_qty),backgroundColor:'#C8102E',borderRadius:6,borderSkipped:false},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#6B7280',padding:12}}},
+      scales:{
+        x:{ticks:{color:'#9AA3B2',font:{size:10},maxRotation:30},grid:{display:false}},
+        y:{ticks:{color:'#9AA3B2',font:{size:11}},grid:{color:'#EEF0F5',drawBorder:false}}
+      }
+    }
+  });
+}
+
+// Sorting
+let sortState={};
+function sortTable(tableId, colIdx){
+  const tbody=document.getElementById(tableId+'Tbody');
+  if(!tbody) return;
+  const rows=Array.from(tbody.querySelectorAll('tr'));
+  const key=tableId+colIdx;
+  const dir=(sortState[key]==='asc')?'desc':'asc';
+  sortState[key]=dir;
+  document.querySelectorAll(`#${tableId}Table thead th`).forEach((th,i)=>{
+    th.classList.remove('sort-asc','sort-desc');
+    if(i===colIdx) th.classList.add(dir==='asc'?'sort-asc':'sort-desc');
+  });
+  rows.sort((a,b)=>{
+    const av=(a.cells[colIdx]?.textContent||'').replace(/[₩,M억B\s]/g,'').trim();
+    const bv=(b.cells[colIdx]?.textContent||'').replace(/[₩,M억B\s]/g,'').trim();
+    const an=parseFloat(av),bn=parseFloat(bv);
+    const cmp=isNaN(an)||isNaN(bn)?av.localeCompare(bv,'ko'):an-bn;
+    return dir==='asc'?cmp:-cmp;
+  });
+  rows.forEach(r=>tbody.appendChild(r));
+}
+
+function fmtN(n){return Math.round(n).toLocaleString('ko-KR')}
+function fmtM(n){return (n/1e6).toFixed(1)+'M'}
+function fmtB(n){
+  if(n>=1e9) return (n/1e9).toFixed(2)+'B';
+  if(n>=1e6) return (n/1e6).toFixed(1)+'M';
+  return fmtN(n);
+}
+
+loadData();
+</script>
+</body>
+</html>
